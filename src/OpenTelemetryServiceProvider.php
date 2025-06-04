@@ -28,8 +28,8 @@ class OpenTelemetryServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->app->extend('prism-telemetry', function (TelemetryManager $manager): \Prism\Prism\Telemetry\TelemetryManager {
-            $manager->extend('opentelemetry', fn (): \Prism\OpenTelemetry\OpenTelemetryDriver => $this->createOpenTelemetryDriver($manager));
+        $this->app->extend('prism-telemetry', function (TelemetryManager $manager): TelemetryManager {
+            $manager->extend('opentelemetry', fn (): OpenTelemetryDriver => $this->createOpenTelemetryDriver($manager));
 
             return $manager;
         });
@@ -93,22 +93,7 @@ class OpenTelemetryServiceProvider extends ServiceProvider
 
     protected function createExporter(array $config): SpanExporter
     {
-        $endpoint = $config['endpoint'] ?? 'http://localhost:4318/v1/traces';
-        $headers = $config['headers'] ?? [];
-
-        if (is_string($headers)) {
-            $parsedHeaders = [];
-            foreach (explode(',', $headers) as $header) {
-                $parts = explode('=', $header, 2);
-                if (count($parts) === 2) {
-                    [$key, $value] = $parts;
-                    $parsedHeaders[trim($key)] = trim($value);
-                }
-            }
-            $headers = $parsedHeaders;
-        }
-
-        $transport = (new OtlpHttpTransportFactory)->create($endpoint, 'application/x-protobuf', $headers);
+        $transport = (new OtlpHttpTransportFactory)->create($config['endpoint'], 'application/x-protobuf');
 
         return new SpanExporter($transport);
     }

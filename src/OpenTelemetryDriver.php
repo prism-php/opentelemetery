@@ -23,9 +23,8 @@ class OpenTelemetryDriver implements TelemetryDriver
         protected ?TelemetryManager $telemetryManager = null
     ) {
         $this->tracer = $tracerProvider->getTracer(
-            name: 'prism',
-            version: '1.0.0',
-            schemaUrl: 'https://opentelemetry.io/schemas/1.21.0'
+            name: $config['service_name'],
+            version: $config['service_version']
         );
     }
 
